@@ -1,37 +1,59 @@
 import { Tabs } from 'expo-router';
-import { BarChart2, Clock, Home, User, UserCircle } from 'lucide-react-native';
-import { GoalsProvider } from '../../context/GoalsContext';
-import { SessionsProvider } from '../../context/SessionsContext'; // 1. Importar
-import { SubjectsProvider } from '../../context/SubjectsContext';
-import { colors } from '../../theme/colors';
+import { useColorScheme } from 'react-native';
+import { cores } from '../../tema/cores'; // Importa nossas cores
+
+// Importa os ícones que vamos usar
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+// Componente helper para o ícone (só para organizar)
+function TabBarIcon(props) {
+  return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
+}
 
 export default function TabLayout() {
+  const scheme = useColorScheme();
+  const theme = scheme === 'dark' ? cores.dark : cores.light;
+
   return (
-    <SubjectsProvider>
-      <GoalsProvider>
-        <SessionsProvider> {/* 2. Adicionar o Provedor aqui */}
-          <Tabs
-            screenOptions={{
-              headerShown: false,
-              tabBarActiveTintColor: colors.accent,
-              // ... (resto das suas tabs)
-              tabBarStyle: {
-                backgroundColor: colors.white,
-                borderTopWidth: 1,
-                borderTopColor: colors.gray,
-                paddingBottom: 5,
-                paddingTop: 5,
-                height: 60,
-              },
-            }}>
-            <Tabs.Screen name="index" options={{ title: 'Início', tabBarIcon: ({ size, color }) => <Home size={size} color={color} />, }} />
-            <Tabs.Screen name="goals" options={{ title: 'Metas', tabBarIcon: ({ size, color }) => <BarChart2 size={size} color={color} />, }} />
-            <Tabs.Screen name="session" options={{ title: 'Sessão', tabBarIcon: ({ size, color }) => <Clock size={size} color={color} />, }} />
-            <Tabs.Screen name="subjects" options={{ title: 'Matérias', tabBarIcon: ({ size, color }) => <User size={size} color={color} />, }} />
-            <Tabs.Screen name="profile" options={{ title: 'Perfil', tabBarIcon: ({ size, color }) => <UserCircle size={size} color={color} />, }} />
-          </Tabs>
-        </SessionsProvider>
-      </GoalsProvider>
-    </SubjectsProvider>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: theme.primary, // Cor do ícone ativo (azul)
+        tabBarInactiveTintColor: theme.mutedForeground, // Cor do ícone inativo (cinza)
+        tabBarStyle: {
+          backgroundColor: theme.card, // Fundo da barra de abas (branco)
+          borderTopColor: theme.border, // Linha de cima
+        },
+        headerShown: false, // Esconde o "Dashboard" escrito no topo da tela
+      }}
+    >
+      <Tabs.Screen
+        name="dashboard" // Nome do arquivo: dashboard.jsx
+        options={{
+          title: 'Dashboard',
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="materias" // Nome do arquivo: materias.jsx
+        options={{
+          title: 'Matérias',
+          tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="objetivos" // Nome do arquivo: objetivos.jsx
+        options={{
+          title: 'Objetivos',
+          tabBarIcon: ({ color }) => <TabBarIcon name="bullseye" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="pomodoro" // Nome do arquivo: pomodoro.jsx
+        options={{
+          title: 'Pomodoro',
+          tabBarIcon: ({ color }) => <TabBarIcon name="clock-o" color={color} />,
+        }}
+      />
+    </Tabs>
   );
 }

@@ -1,74 +1,75 @@
-// app/_layout.jsx
-// (SUBSTITUA TODO O CONTEÚDO)
+// laurabytes/teste/teste-2245de4fd0484947e9d28a093b91aba0b792499b/app/(tabs)/_layout.jsx
+import { Tabs } from 'expo-router';
+import { useColorScheme } from 'react-native';
+// Importamos Timer para ser o novo ícone do Pomodoro
+import { BookOpen, Home, Target, Timer } from 'lucide-react-native';
+import { cores } from '../../tema/cores';
 
-import { Redirect, Slot, useRouter, useSegments } from 'expo-router';
-import { useEffect } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, useColorScheme, View } from 'react-native';
-
-// --- ATENÇÃO: Caminhos de importação corrigidos para sair de app/ e acessar as pastas irmãs ---
-import { AuthProvider, useAuth } from '../contexto/AuthContexto';
-import { cores } from '../tema/cores';
-// ---------------------------------------------------------------------------------------------
-
-function LayoutInicial() {
-  const { user, isLoading } = useAuth();
-  
-  const segments = useSegments(); 
-  const router = useRouter();
+export default function TabsLayout() {
   const scheme = useColorScheme();
   const theme = cores[scheme === 'dark' ? 'dark' : 'light'];
 
-  useEffect(() => {
-    // ESSENCIAL: Espera o AuthProvider terminar de checar o token
-    if (isLoading) {
-      return; 
-    }
-
-    const estaNoGrupoAuth = segments[0] === '(auth)';
-
-    if (user && estaNoGrupoAuth) {
-      // Se logado e em uma tela de autenticação, redireciona para o dashboard.
-      router.replace('/(tabs)/dashboard');
-    } else if (!user && !estaNoGrupoAuth) {
-      // Se deslogado e em uma tela de aplicativo (tabs), redireciona para o login.
-      router.replace('/(auth)/login');
-    }
-  }, [user, isLoading, segments]); 
-
-  // Se está carregando (estado inicial), mostra o spinner.
-  if (isLoading) {
-      return (
-          <View style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]}>
-              <ActivityIndicator size="large" color={theme.primary} />
-          </View>
-      );
-  }
-
-  // CORREÇÃO FINAL para o "THIS SCREEN DOESN'T EXIST": 
-  // Se não estamos logados E a rota é a raiz ('/'), forçamos para o login.
-  if (!user && segments.length === 1 && segments[0] === '') {
-      return <Redirect href="/(auth)/login" />;
-  }
-
-  // O <Slot> renderiza a tela correta (login ou dashboard)
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Slot />
-    </SafeAreaView>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: theme.primary,
+        // 1. REMOVE OS NOMES:
+        tabBarShowLabel: false, 
+        tabBarStyle: {
+          backgroundColor: theme.card,
+          borderTopColor: theme.border,
+        },
+        headerStyle: {
+          backgroundColor: theme.background,
+        },
+        headerTitleStyle: {
+          color: theme.foreground,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          title: 'Início',
+          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          headerShown: false, 
+        }}
+      />
+      <Tabs.Screen
+        name="pomodoro"
+        options={{
+          title: 'Pomodoro',
+          // 2. MUDA O ÍCONE: Agora usa Timer em vez de Coffee
+          tabBarIcon: ({ color }) => <Timer size={24} color={color} />, 
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="objetivos"
+        options={{
+          title: 'Objetivos',
+          tabBarIcon: ({ color }) => <Target size={24} color={color} />, 
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        // Corresponde ao arquivo materias/index.jsx
+        name="materias/index" 
+        options={{
+          title: 'Matérias',
+          tabBarIcon: ({ color }) => <BookOpen size={24} color={color} />, 
+          headerShown: false,
+        }}
+      />
+      {/* Rota para o detalhe de Flashcards, escondida da TabBar */}
+      <Tabs.Screen 
+        name="materias/[id]"
+        options={{
+          href: null, 
+          headerShown: false, 
+          title: 'Flashcards',
+        }}
+      />
+    </Tabs>
   );
 }
-
-// Este é o componente principal
-export default function RootLayout() {
-  return (
-    <AuthProvider>
-      <LayoutInicial />
-    </AuthProvider>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

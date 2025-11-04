@@ -1,12 +1,16 @@
+// app/(auth)/login.jsx
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
-import { cores } from '../../tema/cores';
-
-// 1. IMPORTAR O USEAUTH
-import { useAuth } from '../../contexto/AuthContexto';
-
-// Nossos componentes customizados
+import {
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    useColorScheme,
+    View
+} from 'react-native';
 import { Botao } from '../../componentes/Botao';
 import { CampoDeTexto } from '../../componentes/CampoDeTexto';
 import {
@@ -17,33 +21,33 @@ import {
     CardHeader,
     CardTitle,
 } from '../../componentes/Card';
+import { useAuth } from '../../contexto/AuthContexto';
+import { cores } from '../../tema/cores';
 
 export default function Login() {
   const scheme = useColorScheme();
   const theme = scheme === 'dark' ? cores.dark : cores.light;
 
-  // 2. PEGAR A FUNÇÃO DE LOGIN DO CONTEXTO
   const { login } = useAuth();
-
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Loading do formulário
 
-  // 3. ATUALIZAR A FUNÇÃO DE LOGIN
   const handleLogin = async () => {
-    // Por enquanto, só vamos mostrar no console.
-    // A lógica da API virá depois.
-    console.log('Tentando login com:', email, 'Senha:', senha);
+    if (email === '' || senha === '') {
+      Alert.alert('Erro', 'Por favor, preencha o email e a senha.');
+      return;
+    }
+    
+    setIsLoading(true);
     try {
-      // Chama a função de login (simulada) do nosso contexto
+      // Chama a função de login (simulada) do contexto
       await login(email, senha);
-      
       // Se o login funcionar, o _layout.jsx vai nos redirecionar
-      // para o dashboard automaticamente.
-      
     } catch (error) {
-      // Se a API (no futuro) der erro, podemos mostrar um alerta
-      Alert.alert("Erro no Login", "Email ou senha inválidos.");
-      console.error(error);
+      Alert.alert('Erro no Login', error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,15 +78,18 @@ export default function Login() {
                 placeholder="Sua senha"
                 value={senha}
                 onChangeText={setSenha}
-                secureTextEntry={true} // Para esconder a senha
+                secureTextEntry={true}
               />
             </View>
           </CardContent>
 
           <CardFooter>
-            {/* O Botão agora chama o handleLogin atualizado */}
-            <Botao onPress={handleLogin}>
-              Entrar
+            <Botao onPress={handleLogin} disabled={isLoading} style={{ width: '100%' }}>
+              {isLoading ? (
+                <ActivityIndicator color={theme.primaryForeground} />
+              ) : (
+                'Entrar'
+              )}
             </Botao>
           </CardFooter>
         </Card>
@@ -102,36 +109,18 @@ export default function Login() {
   );
 }
 
-// Estilos (não mudou nada aqui)
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
+  safeArea: { flex: 1 },
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
-  card: {
-    width: '100%',
-    maxWidth: 400,
-  },
-  content: {
-    gap: 16,
-  },
-  inputGroup: {
-    width: '100%',
-    gap: 6,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  linkButton: {
-    marginTop: 24,
-  },
-  linkText: {
-    fontSize: 14,
-  },
+  card: { width: '100%', maxWidth: 400 },
+  content: { gap: 16 },
+  inputGroup: { width: '100%', gap: 6 },
+  label: { fontSize: 14, fontWeight: '500' },
+  linkButton: { marginTop: 24 },
+  linkText: { fontSize: 14 },
 });

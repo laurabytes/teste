@@ -1,11 +1,11 @@
+// app/_layout.jsx
+
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { SafeAreaView, StyleSheet, useColorScheme } from 'react-native';
 import { cores } from '../tema/cores';
 
 // 1. IMPORTANTE: Vamos importar o AuthContexto
-// (Nós ainda não criamos este arquivo, então o app vai quebrar
-//  no próximo passo, mas já vamos deixar pronto)
 import { AuthProvider, useAuth } from '../contexto/AuthContexto';
 
 // Este componente decide para onde o usuário vai
@@ -36,13 +36,25 @@ function LayoutInicial() {
     }
   }, [user, isLoading, segments]); // Roda essa lógica sempre que o usuário mudar
 
-  if (isLoading) {
-    return null; // Pode pôr um <ActivityIndicator> (spinner) aqui
-  }
+  // 5. MUDANÇA: O Root Layout NÃO PODE retornar null.
+  // Ele deve SEMPRE renderizar o <Slot />.
+  // O useEffect acima irá lidar com o redirecionamento
+  // assim que 'isLoading' se tornar 'false'.
+  
+  // if (isLoading) {
+  //   return null; // <-- ESSE É O PROBLEMA! REMOVA ISSO.
+  // }
 
-  // 5. O <Slot> renderiza a tela correta (login ou dashboard)
+  // O <Slot> renderiza a tela correta (login ou dashboard)
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      {/*
+        Enquanto isLoading=true, o Slot vai renderizar a rota 
+        que foi pedida (ex: / ou /dashboard). 
+        Assim que o useEffect do AuthContexto rodar e 
+        isLoading virar 'false', o useEffect *deste* arquivo vai rodar e fazer o redirecionamento 
+        correto (ex: para /login) se necessário.
+      */}
       <Slot />
     </SafeAreaView>
   );

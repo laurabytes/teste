@@ -6,7 +6,10 @@ import {
     useColorScheme,
     View
 } from 'react-native';
-import { cores } from '../tema/cores'; // Caminho para a pasta 'tema'
+
+// 1. IMPORTE O GESTUREHANDLERROOTVIEW AQUI
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { cores } from '../tema/cores';
 
 export function Dialog({ open, onOpenChange, children }) {
   const scheme = useColorScheme();
@@ -40,13 +43,16 @@ export function Dialog({ open, onOpenChange, children }) {
       visible={open}
       onRequestClose={() => onOpenChange(false)}
     >
-      <TouchableWithoutFeedback onPress={() => onOpenChange(false)}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback>
-            <View style={styles.content}>{children}</View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
+      {/* 2. ENVOLVA O CONTEÚDO DO MODAL (style={{ flex: 1 }} é essencial) */}
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <TouchableWithoutFeedback onPress={() => onOpenChange(false)}>
+          <View style={styles.overlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.content}>{children}</View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

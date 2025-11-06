@@ -3,7 +3,8 @@
 import { Tabs } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import { BookOpen, Home, Target, Timer, UserCircle } from 'lucide-react-native';
-import { cores } from '../../tema/cores';
+// O caminho aqui é ../../ porque está dentro de (tabs)/
+import { cores } from '../../tema/cores'; 
 
 export default function TabsLayout() {
   const scheme = useColorScheme();
@@ -45,7 +46,6 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="objetivos"
         options={{
-          // ALTERAÇÃO 1: Renomeado o título da aba
           title: 'Metas',
           tabBarIcon: ({ color }) => <Target size={24} color={color} />,
           headerShown: false,
@@ -75,7 +75,7 @@ export default function TabsLayout() {
           title: 'Perfil',
           tabBarIcon: ({ color }) => <UserCircle size={24} color={color} />,
           headerShown: false,
-          href: null,
+          // href: null, // Deixei isto comentado caso queira que o perfil apareça na aba
         }}
       />
     </Tabs>

@@ -3,43 +3,61 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Edit, FlipHorizontal, Plus, Trash2 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    useColorScheme,
-    View
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View
 } from 'react-native';
-import { Botao } from '../../../componentes/Botao'; // <-- CORRIGIDO
-import { Card, CardContent, CardHeader, CardTitle } from '../../../componentes/Card'; // <-- CORRIGIDO
-import { Dialog } from '../../../componentes/Dialog'; // <-- CORRIGIDO
-import { Textarea } from '../../../componentes/Textarea'; // <-- CORRIGIDO
-import { cores } from '../../../tema/cores'; // <-- CORRIGIDO
+import { Botao } from '../../../componentes/Botao';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../componentes/Card';
+import { Dialog } from '../../../componentes/Dialog';
+import { Textarea } from '../../../componentes/Textarea';
+import { cores } from '../../../tema/cores';
 
 // Mock de dados
 const MOCK_DATA = {
     1: { 
-        subject: { id: 1, nome: 'Matemática', descricao: 'Álgebra e Geometria' },
+        // Removido 'subject' daqui, pois agora recebemos por parâmetro
         flashcards: [
             { id: 101, pergunta: 'O que é 2+2?', resposta: '4', materiaId: 1 },
             { id: 102, pergunta: 'O que é a fórmula de Bhaskara?', resposta: 'x = [-b ± sqrt(b² - 4ac)] / 2a', materiaId: 1 },
         ]
     },
     2: {
-        subject: { id: 2, nome: 'História', descricao: 'História do Brasil' },
         flashcards: [
             { id: 103, pergunta: 'Quem descobriu o Brasil?', resposta: 'Pedro Álvares Cabral', materiaId: 2 },
         ]
     }
 };
 
+// ADICIONADO: Função helper para contraste da cor
+function getTextColorForBackground(hexColor) {
+  try {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+    // Retorna a cor de texto principal (escura) se o fundo for claro
+    return luminance > 180 ? cores.light.foreground : cores.light.primaryForeground; 
+  } catch (e) {
+    // Retorna a cor escura por padrão em caso de erro
+    return cores.light.foreground; 
+  }
+}
+
 export default function TelaFlashcards() {
   const params = useLocalSearchParams();
   const router = useRouter();
-  const { id: subjectId } = params;
+  
+  // ALTERAÇÃO 1: Receber 'cor' e 'nome' dos parâmetros
+  const { id: subjectId, cor: corParam, nome: nomeParam } = params;
+  
   const scheme = useColorScheme();
   const theme = scheme === 'dark' ? cores.dark : cores.light;
 
@@ -52,16 +70,31 @@ export default function TelaFlashcards() {
   const [formData, setFormData] = useState({ pergunta: '', resposta: '' });
   const [flippedCards, setFlippedCards] = useState(new Set());
 
+  // ALTERAÇÃO 2: Estados para guardar a cor da matéria e a cor do texto
+  const [subjectColor, setSubjectColor] = useState(theme.card);
+  const [textColor, setTextColor] = useState(theme.foreground);
+
   useEffect(() => {
     setIsPageLoading(true);
+
+    // ALTERAÇÃO 3: Definir as cores e o nome da matéria
+    // Adiciona o '#' de volta à cor recebida
+    const decodedColor = corParam ? `#${corParam}` : theme.card;
+    const decodedName = nomeParam ? nomeParam : 'Matéria';
+
+    setSubjectColor(decodedColor);
+    setTextColor(getTextColorForBackground(decodedColor)); // Define a cor de texto ideal
+    setSubject({ id: subjectId, nome: decodedName }); // Define o nome no header
+
+    // Carrega os flashcards (baseado no MOCK)
     setTimeout(() => {
-        // Encontra os dados no mock. O `|| {}` evita crash se o ID não existir.
-        const data = MOCK_DATA[subjectId] || { subject: { nome: 'Não encontrado' }, flashcards: [] };
-        setSubject(data.subject);
+        const data = MOCK_DATA[subjectId] || { flashcards: [] };
         setFlashcards(data.flashcards);
         setIsPageLoading(false);
     }, 500);
-  }, [subjectId]);
+    
+    // ALTERAÇÃO 4: Adicionar 'corParam' e 'nomeParam' às dependências
+  }, [subjectId, corParam, nomeParam, theme]);
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -144,6 +177,7 @@ export default function TelaFlashcards() {
             <ArrowLeft color={theme.foreground} size={24} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
+            {/* O nome agora vem do estado 'subject' */}
             <Text style={[styles.title, { color: theme.foreground }]} numberOfLines={1}>{subject?.nome}</Text>
             <Text style={[styles.subtitle, { color: theme.mutedForeground }]}>
               Flashcards para revisão
@@ -202,15 +236,19 @@ export default function TelaFlashcards() {
           </Card>
         ) : (
           <View style={styles.grid}>
+            
+            {/* ============================================================== */}
+            {/* ALTERAÇÕES DE ESTILO NOS CARDS */}
+            {/* ============================================================== */}
             {flashcards.map((flashcard) => (
-              <Card key={flashcard.id} style={styles.card}>
+              <Card key={flashcard.id} style={[styles.card, { backgroundColor: subjectColor }]}>
                 <CardHeader>
                   <View style={styles.cardTitleRow}>
-                    <CardTitle style={{ flex: 1, color: theme.foreground }}>
+                    <CardTitle style={{ flex: 1, color: textColor }}>
                       {flippedCards.has(flashcard.id) ? 'Resposta' : 'Pergunta'}
                     </CardTitle>
                     <TouchableOpacity onPress={() => openEditDialog(flashcard)}>
-                      <Edit color={theme.mutedForeground} size={18} />
+                      <Edit color={textColor} size={18} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleDelete(flashcard.id)}>
                       <Trash2 color={theme.destructive} size={18} />
@@ -218,16 +256,31 @@ export default function TelaFlashcards() {
                   </View>
                 </CardHeader>
                 <CardContent style={{ gap: 16 }}>
-                  <Text style={[styles.flashcardText, { color: theme.foreground }]}>
+                  <Text style={[styles.flashcardText, { color: textColor }]}>
                     {flippedCards.has(flashcard.id) ? flashcard.resposta : flashcard.pergunta}
                   </Text>
-                  <Botao variant="outline" onPress={() => toggleFlip(flashcard.id)}>
-                    <FlipHorizontal size={16} color={theme.foreground} style={{ marginRight: 8 }} />
-                    Virar Card
+                  
+                  {/* Botão estilizado para fundos coloridos */}
+                  <Botao 
+                    variant="outline" 
+                    onPress={() => toggleFlip(flashcard.id)}
+                    style={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)', // Fundo semitransparente
+                      borderColor: 'transparent', // Remove a borda padrão do outline
+                    }}
+                  >
+                    <FlipHorizontal size={16} color={textColor} style={{ marginRight: 8 }} />
+                    <Text style={{ color: textColor, fontWeight: '500', fontSize: 14 }}>
+                      Virar Card
+                    </Text>
                   </Botao>
                 </CardContent>
               </Card>
             ))}
+            {/* ============================================================== */}
+            {/* FIM DAS ALTERAÇÕES DE ESTILO */}
+            {/* ============================================================== */}
+            
           </View>
         )}
       </ScrollView>

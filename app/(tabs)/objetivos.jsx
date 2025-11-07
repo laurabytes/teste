@@ -1,3 +1,4 @@
+// app/(tabs)/objetivos.jsx
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CheckCircle2, Circle, Edit, Plus, Target, Trash2 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
@@ -14,6 +15,12 @@ import {
   useColorScheme,
   View
 } from 'react-native';
+
+// ===== INÍCIO DA IMPORTAÇÃO =====
+// Adicionando o SegmentedControl
+import SegmentedControl from '@react-native-segmented-control/segmented-control';
+// ===== FIM DA IMPORTAÇÃO =====
+
 import { Badge } from '../../componentes/Badge';
 import { Botao } from '../../componentes/Botao';
 import { CampoDeTexto } from '../../componentes/CampoDeTexto';
@@ -26,7 +33,10 @@ import {
 } from '../../componentes/Card';
 import { Dialog } from '../../componentes/Dialog';
 import { Progress } from '../../componentes/Progress';
-import { Select, SelectItem } from '../../componentes/Select';
+// O Select de progresso foi removido, então não precisamos mais dele aqui
+// AINDA PRECISAMOS dele para o Status (ops, não, vamos remover)
+// import { Select, SelectItem } from '../../componentes/Select'; 
+// import { Select } from '../../componentes/Select'; // Removido
 import { Textarea } from '../../componentes/Textarea';
 import { useAuth } from '../../contexto/AuthContexto';
 import { cores } from '../../tema/cores';
@@ -101,17 +111,14 @@ export default function TelaMetas() {
 
   const handleSubmit = async () => {
     
-    // ===== INÍCIO DA VALIDAÇÃO DE DATA =====
-    // Verifica se a data final foi preenchida e se é anterior à data inicial
+    // ===== VALIDAÇÃO DE DATA (sem alteração) =====
     if (formData.dataFim && formData.dataInicio) {
-      // Adicionamos T00:00:00 para garantir que a comparação seja feita no início do dia,
-      // ignorando fuso horário ou horas.
       const dataInicio = new Date(formData.dataInicio + 'T00:00:00');
       const dataFim = new Date(formData.dataFim + 'T00:00:00');
 
       if (dataFim < dataInicio) {
         Alert.alert('Data Inválida', 'A data de fim não pode ser anterior à data de início.');
-        return; // Para a execução da função
+        return; 
       }
     }
     // ===== FIM DA VALIDAÇÃO DE DATA =====
@@ -161,6 +168,9 @@ export default function TelaMetas() {
       setIsLoading(false);
     }
   };
+
+  // Funções handleDelete, toggleStatus, openEditDialog, openCreateDialog, getStatusBadge...
+  // ... (NENHUMA ALTERAÇÃO NECESSÁRIA AQUI) ...
 
   const handleDelete = async (id) => {
     Alert.alert('Excluir Meta', 'Tem certeza que deseja excluir?', [
@@ -231,6 +241,7 @@ export default function TelaMetas() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* ... (Cabeçalho "Metas" - sem alteração) ... */}
         <View style={styles.headerRow}>
           <View>
             <Text style={[styles.title, { color: theme.foreground }]}>Metas</Text>
@@ -238,16 +249,16 @@ export default function TelaMetas() {
               Defina e acompanhe suas metas
             </Text>
           </View>
-           
         </View>
 
+        {/* --- MODAL / DIALOG --- */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <ScrollView 
             keyboardShouldPersistTaps="handled" 
             contentContainerStyle={{ paddingBottom: 40 }}
           >
             {showDatePickerFor ? (
-              // --- VISTA DO CALENDÁRIO ---
+              // --- VISTA DO CALENDÁRIO (sem alteração) ---
               <View>
                 <Text style={[styles.dialogTitle, { color: theme.foreground, marginBottom: 16 }]}>
                   {showDatePickerFor === 'dataInicio' ? 'Selecione a Data de Início' : 'Selecione a Data de Fim'}
@@ -274,7 +285,7 @@ export default function TelaMetas() {
               </View>
 
             ) : (
-              // --- VISTA DO FORMULÁRIO ---
+              // --- VISTA DO FORMULÁRIO (COM ALTERAÇÕES) ---
               <View>
                 <Text style={[styles.dialogTitle, { color: theme.foreground }]}>
                   {editingGoal ? 'Editar Meta' : 'Nova Meta'}
@@ -293,6 +304,7 @@ export default function TelaMetas() {
                     placeholder="Descreva sua meta (opcional)"
                   />
                   
+                  {/* ... (Campos de Data - sem alteração) ... */}
                   <Text style={[styles.label, { color: theme.foreground }]}>Data Início</Text>
                   <TouchableOpacity 
                     style={[styles.fakeInput, { borderColor: theme.border, backgroundColor: theme.card }]}
@@ -313,30 +325,42 @@ export default function TelaMetas() {
                     </Text>
                   </TouchableOpacity>
 
+                  {/* ===== INÍCIO DA ALTERAÇÃO 1 (Progresso) ===== */}
+                  {/* Trocando o <Select> por <CampoDeTexto> */}
                   <Text style={[styles.label, { color: theme.foreground }]}>Progresso (%)</Text>
-                  <Select
+                  <CampoDeTexto
                     value={formData.progresso}
-                    onValueChange={(p) => setFormData({ ...formData, progresso: p })}
-                    prompt="Selecione o progresso"
-                  >
-                    <SelectItem label="0%" value="0" />
-                    <SelectItem label="10%" value="10" />
-                    <SelectItem label="25%" value="25" />
-                    <SelectItem label="50%" value="50" />
-                    <SelectItem label="75%" value="75" />
-                    <SelectItem label="90%" value="90" />
-                    <SelectItem label="100%" value="100" />
-                  </Select>
+                    onChangeText={(p) => {
+                      // Garante que apenas números sejam inseridos
+                      const num = p.replace(/[^0-9]/g, '');
+                      setFormData({ ...formData, progresso: num });
+                    }}
+                    placeholder="0"
+                    keyboardType="number-pad"
+                    maxLength={3} // 100 é o máximo
+                  />
+                  {/* ===== FIM DA ALTERAÇÃO 1 ===== */}
 
+
+                  {/* ===== INÍCIO DA ALTERAÇÃO 2 (Status) ===== */}
+                  {/* Trocando o <Select> por <SegmentedControl> */}
                   <Text style={[styles.label, { color: theme.foreground }]}>Status</Text>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(status) => setFormData({ ...formData, status })}
-                    prompt="Selecione o status" 
-                  >
-                    <SelectItem label="Em Andamento" value="EM_ANDAMENTO" />
-                    <SelectItem label="Concluído" value="CONCLUIDO" />
-                  </Select>
+                  <SegmentedControl
+                    values={['Em Andamento', 'Concluído']}
+                    // Mapeia o estado (String) para o índice (Número)
+                    selectedIndex={formData.status === 'CONCLUIDO' ? 1 : 0}
+                    onValueChange={(value) => {
+                      // Mapeia o valor do controle (String) de volta para o estado
+                      const newStatus = value === 'Concluído' ? 'CONCLUIDO' : 'EM_ANDAMENTO';
+                      setFormData({ ...formData, status: newStatus });
+                    }}
+                    style={styles.segmentedControl} // Estilo adicionado abaixo
+                    backgroundColor={theme.muted} // Fundo cinza
+                    tintColor={theme.primary} // Cor do botão ativo (azul)
+                    fontStyle={{ color: theme.foreground }}
+                    activeFontStyle={{ color: theme.primaryForeground, fontWeight: 'bold' }}
+                  />
+                  {/* ===== FIM DA ALTERAÇÃO 2 ===== */}
                   
                   <View style={styles.dialogActions}>
                     <Botao variant="destructive" onPress={() => setIsDialogOpen(false)}>
@@ -351,6 +375,8 @@ export default function TelaMetas() {
             )}
           </ScrollView>
         </Dialog>
+        
+        {/* ... (Resto do arquivo: DatePicker, Lista de Metas, Botão Flutuante - sem alteração) ... */}
         
         {showDatePickerFor && Platform.OS === 'android' && (
           <DateTimePicker
@@ -533,5 +559,11 @@ const styles = StyleSheet.create({
     elevation: 8, 
     shadowOpacity: 0.1,
     shadowRadius: 4,
-  }
+  },
+  
+  // ===== INÍCIO DO NOVO ESTILO =====
+  segmentedControl: {
+    height: 44, 
+  },
+  // ===== FIM DO NOVO ESTILO =====
 });

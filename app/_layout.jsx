@@ -8,7 +8,8 @@ import { Redirect, Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, useColorScheme, View } from 'react-native';
 import { AuthProvider, useAuth } from '../contexto/AuthContexto';
-import { cores } from '../tema/cores';
+// CORREÇÃO: Caminho correto (apenas um nível para cima)
+import { cores } from '../tema/cores'; 
 
 function LayoutInicial() {
   const { user, isLoading } = useAuth();

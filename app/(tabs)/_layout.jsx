@@ -2,7 +2,8 @@
 
 import { Tabs } from 'expo-router';
 import { useColorScheme } from 'react-native';
-import { BookOpen, Home, Target, Timer, UserCircle } from 'lucide-react-native';
+// ÍCONES: Adicionado Calendar e removido UserCircle (agora é a aba Planejador)
+import { BookOpen, Home, Target, Timer, Calendar } from 'lucide-react-native';
 // O caminho aqui é ../../ porque está dentro de (tabs)/
 import { cores } from '../../tema/cores'; 
 
@@ -68,7 +69,6 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* ===== ESTA É A CORREÇÃO ===== */}
       {/* A tela 'revisao' também deve ser listada aqui e escondida com href: null */}
       <Tabs.Screen
         name="materias/revisao" 
@@ -78,13 +78,13 @@ export default function TabsLayout() {
           title: 'Revisão Mista',
         }}
       />
-      {/* ===== FIM DA CORREÇÃO ===== */}
 
+      {/* PERFIL AGORA É O PLANEJADOR */}
       <Tabs.Screen
-        name="perfil"
+        name="perfil" // Nome do arquivo .jsx que contém o planejador
         options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color }) => <UserCircle size={24} color={color} />,
+          title: 'Planejador', // Título alterado na aba
+          tabBarIcon: ({ color }) => <Calendar size={24} color={color} />, // Ícone alterado
           headerShown: false,
         }}
       />

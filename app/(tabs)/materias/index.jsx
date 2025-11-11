@@ -29,7 +29,7 @@ import { Textarea } from '../../../componentes/Textarea';
 import { useAuth } from '../../../contexto/AuthContexto';
 import { cores } from '../../../tema/cores';
 
-// MOCK_DATA (Flashcards)
+// MOCK_DATA (Flashcards) - Mantido para a lógica de Sessão Mista
 const MOCK_DATA = {
     1: { 
         flashcards: [
@@ -76,11 +76,8 @@ export default function TelaMaterias() {
 
   useEffect(() => {
     setIsPageLoading(true);
-    // Simulação: Carrega as matérias (que têm as cores)
-    setSubjects([
-      { id: 1, nome: 'Matemática', descricao: 'Cálculos e fórmulas', cor: '#3b82f6', usuarioId: user?.id },
-      { id: 2, nome: 'História', descricao: 'História do Brasil', cor: '#ef4444', usuarioId: user?.id },
-    ]);
+    // Inicializa com uma lista vazia
+    setSubjects([]); 
     setIsPageLoading(false);
   }, [user]);
 
@@ -153,7 +150,6 @@ export default function TelaMaterias() {
     setIsDialogOpen(true);
   };
 
-  // ===== INÍCIO DA ALTERAÇÃO =====
   // Função para iniciar a sessão mista
   const handleStartMixedSession = () => {
     
@@ -200,7 +196,6 @@ export default function TelaMaterias() {
       },
     });
   };
-  // ===== FIM DA ALTERAÇÃO =====
   
   const ColorPreviewSelector = ({ onPress, color }) => (
     <TouchableOpacity 
@@ -240,24 +235,20 @@ export default function TelaMaterias() {
           </View>
           
           <View style={styles.headerButtonsContainer}>
-            <TouchableOpacity
-              style={[styles.headerButton, { backgroundColor: theme.muted }]} // Botão de Sessão Mista
-              onPress={handleStartMixedSession}
-            >
-              <Shuffle color={theme.foreground} size={20} />
-            </TouchableOpacity>
+            {/* Mantém apenas o botão de Sessão Mista */}
+            {subjects.length > 0 && (
+                <TouchableOpacity
+                style={[styles.headerButton, { backgroundColor: theme.muted }]}
+                onPress={handleStartMixedSession}
+                >
+                <Shuffle color={theme.foreground} size={20} />
+                </TouchableOpacity>
+            )}
 
-            <TouchableOpacity
-              style={[styles.headerButton, { backgroundColor: theme.primary }]} // Botão de Adicionar
-              onPress={openCreateDialog}
-            >
-              <Plus color={theme.primaryForeground} size={20} />
-            </TouchableOpacity>
+            {/* O BOTÃO DE ADICIONAR FOI REMOVIDO DAQUI */}
           </View>
 
         </View>
-
-        {/* O resto do arquivo (Dialog, map, styles) permanece igual */}
         
         <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
           <ScrollView keyboardShouldPersistTaps="handled">
@@ -331,22 +322,16 @@ export default function TelaMaterias() {
 
         {isPageLoading && <ActivityIndicator size="large" color={theme.primary} />}
 
-        {/* ===== INÍCIO DO AJUSTE PARA O LAYOUT VAZIO (emptyState) ===== */}
+        {/* Renderiza o estado vazio se não houver matérias */}
         {!isPageLoading && subjects.length === 0 ? (
-          // Usamos um View em vez de Card para ter fundo transparente (cor de fundo da tela), como na imagem.
           <View style={styles.emptyContainer}> 
               <BookOpen color={theme.mutedForeground} size={48} style={styles.emptyIcon} />
               <Text style={[styles.emptyTitle, { color: theme.foreground }]}>
                 Nenhuma matéria cadastrada
               </Text>
               <Text style={[styles.emptyText, { color: theme.mutedForeground }]}>
-                Comece criando sua primeira matéria e flashcards.
+                Use o botão **+** para criar sua primeira matéria.
               </Text>
-              {/* O botão usa texto e ícone, com o padding ajustado */}
-              <Botao onPress={openCreateDialog} style={styles.emptyButton}>
-                <Plus size={18} color={theme.primaryForeground} style={{ marginRight: 8 }} />
-                Criar Primeira Matéria
-              </Botao>
           </View>
         ) : (
           <View style={styles.grid}>
@@ -367,7 +352,8 @@ export default function TelaMaterias() {
                 >
                   <Pressable>
                     <Card style={[styles.card, { backgroundColor: subject.cor || theme.card }]}>
-                      <CardHeader style={{ paddingTop: 16, paddingBottom: 16, paddingHorizontal: 16 }}>
+                      {/* Manutenção da alteração do padding para retângulos maiores */}
+                      <CardHeader style={{ paddingTop: 24, paddingBottom: 24, paddingHorizontal: 16 }}>
                         <View style={styles.cardTitleRow}>
                           <CardTitle style={{ flex: 1, color: textColor, fontSize: 20 }}>
                             {subject.nome}
@@ -397,6 +383,14 @@ export default function TelaMaterias() {
           </View>
         )}
       </ScrollView>
+      
+      {/* NOVO: Botão Flutuante (FAB) no canto inferior direito */}
+      <TouchableOpacity 
+        style={[styles.fabButton, { backgroundColor: theme.primary }]} 
+        onPress={openCreateDialog}
+      >
+        <Plus size={30} color={theme.primaryForeground} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -433,7 +427,7 @@ const styles = StyleSheet.create({
   },
   
   // =======================================================
-  // ESTILOS DO ESTADO VAZIO (emptyState) - AJUSTADOS
+  // ESTILOS DO ESTADO VAZIO (emptyState)
   // =======================================================
   emptyContainer: {
     flex: 1,
@@ -448,18 +442,36 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   emptyTitle: { 
-    fontSize: 22, // Aumentado para 22
-    fontWeight: '700', // Aumentado para 700
+    fontSize: 22, 
+    fontWeight: '700', 
   },
   emptyText: { 
     textAlign: 'center',
-    fontSize: 16, // Aumentado para 16
-    marginBottom: 16, // Mais espaço antes do botão
+    fontSize: 16, 
+    marginBottom: 16, 
   },
-  emptyButton: {
-    paddingHorizontal: 24, // Ajusta o padding para o botão da imagem
+  // =======================================================
+  
+  // =======================================================
+  // ESTILO: Floating Action Button (FAB)
+  // =======================================================
+  fabButton: {
+    position: 'absolute',
+    bottom: 30, // Distância da borda inferior
+    right: 20, // Distância da borda direita
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // Sombra para dar o efeito de flutuação
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8, // Sombra Android
+    zIndex: 10, // Garantir que flutue sobre o conteúdo
   },
-  // O antigo emptyState foi removido e substituído por emptyContainer
   // =======================================================
 
   dialogTitle: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
@@ -467,12 +479,14 @@ const styles = StyleSheet.create({
   form: { gap: 12 },
   inputGroup: { width: '100%', gap: 6 },
   label: { fontSize: 14, fontWeight: '500', marginBottom: 4 },
+
   dialogActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
+    flexDirection: 'row', 
+    justifyContent: 'space-between',
+    gap: 8, 
     marginTop: 20,
   },
+// ...
   
   colorPickerContainer: {
     width: '100%',

@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 
 // ===== INÍCIO DA IMPORTAÇÃO =====
-// Adicionando o SegmentedControl
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 // ===== FIM DA IMPORTAÇÃO =====
 
@@ -33,10 +32,6 @@ import {
 } from '../../componentes/Card';
 import { Dialog } from '../../componentes/Dialog';
 import { Progress } from '../../componentes/Progress';
-// O Select de progresso foi removido, então não precisamos mais dele aqui
-// AINDA PRECISAMOS dele para o Status (ops, não, vamos remover)
-// import { Select, SelectItem } from '../../componentes/Select'; 
-// import { Select } from '../../componentes/Select'; // Removido
 import { Textarea } from '../../componentes/Textarea';
 import { useAuth } from '../../contexto/AuthContexto';
 import { cores } from '../../tema/cores';
@@ -66,7 +61,7 @@ export default function TelaMetas() {
 
   useEffect(() => {
     setIsPageLoading(true);
-    setGoals([]);
+    setGoals([]); // Começa vazio
     setIsPageLoading(false);
   }, [user]);
   
@@ -169,9 +164,6 @@ export default function TelaMetas() {
     }
   };
 
-  // Funções handleDelete, toggleStatus, openEditDialog, openCreateDialog, getStatusBadge...
-  // ... (NENHUMA ALTERAÇÃO NECESSÁRIA AQUI) ...
-
   const handleDelete = async (id) => {
     Alert.alert('Excluir Meta', 'Tem certeza que deseja excluir?', [
       { text: 'Cancelar', style: 'cancel' },
@@ -241,7 +233,7 @@ export default function TelaMetas() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* ... (Cabeçalho "Metas" - sem alteração) ... */}
+        {/* ... (Cabeçalho "Metas") ... */}
         <View style={styles.headerRow}>
           <View>
             <Text style={[styles.title, { color: theme.foreground }]}>Metas</Text>
@@ -251,14 +243,14 @@ export default function TelaMetas() {
           </View>
         </View>
 
-        {/* --- MODAL / DIALOG --- */}
+        {/* --- MODAL / DIALOG (sem alteração) --- */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <ScrollView 
             keyboardShouldPersistTaps="handled" 
             contentContainerStyle={{ paddingBottom: 40 }}
           >
             {showDatePickerFor ? (
-              // --- VISTA DO CALENDÁRIO (sem alteração) ---
+              // --- VISTA DO CALENDÁRIO ---
               <View>
                 <Text style={[styles.dialogTitle, { color: theme.foreground, marginBottom: 16 }]}>
                   {showDatePickerFor === 'dataInicio' ? 'Selecione a Data de Início' : 'Selecione a Data de Fim'}
@@ -285,7 +277,7 @@ export default function TelaMetas() {
               </View>
 
             ) : (
-              // --- VISTA DO FORMULÁRIO (COM ALTERAÇÕES) ---
+              // --- VISTA DO FORMULÁRIO ---
               <View>
                 <Text style={[styles.dialogTitle, { color: theme.foreground }]}>
                   {editingGoal ? 'Editar Meta' : 'Nova Meta'}
@@ -304,7 +296,7 @@ export default function TelaMetas() {
                     placeholder="Descreva sua meta (opcional)"
                   />
                   
-                  {/* ... (Campos de Data - sem alteração) ... */}
+                  {/* ... (Campos de Data) ... */}
                   <Text style={[styles.label, { color: theme.foreground }]}>Data Início</Text>
                   <TouchableOpacity 
                     style={[styles.fakeInput, { borderColor: theme.border, backgroundColor: theme.card }]}
@@ -325,42 +317,34 @@ export default function TelaMetas() {
                     </Text>
                   </TouchableOpacity>
 
-                  {/* ===== INÍCIO DA ALTERAÇÃO 1 (Progresso) ===== */}
-                  {/* Trocando o <Select> por <CampoDeTexto> */}
+                  {/* Campo de Progresso */}
                   <Text style={[styles.label, { color: theme.foreground }]}>Progresso (%)</Text>
                   <CampoDeTexto
                     value={formData.progresso}
                     onChangeText={(p) => {
-                      // Garante que apenas números sejam inseridos
                       const num = p.replace(/[^0-9]/g, '');
                       setFormData({ ...formData, progresso: num });
                     }}
                     placeholder="0"
                     keyboardType="number-pad"
-                    maxLength={3} // 100 é o máximo
+                    maxLength={3}
                   />
-                  {/* ===== FIM DA ALTERAÇÃO 1 ===== */}
 
-
-                  {/* ===== INÍCIO DA ALTERAÇÃO 2 (Status) ===== */}
-                  {/* Trocando o <Select> por <SegmentedControl> */}
+                  {/* Campo de Status (SegmentedControl) */}
                   <Text style={[styles.label, { color: theme.foreground }]}>Status</Text>
                   <SegmentedControl
                     values={['Em Andamento', 'Concluído']}
-                    // Mapeia o estado (String) para o índice (Número)
                     selectedIndex={formData.status === 'CONCLUIDO' ? 1 : 0}
                     onValueChange={(value) => {
-                      // Mapeia o valor do controle (String) de volta para o estado
                       const newStatus = value === 'Concluído' ? 'CONCLUIDO' : 'EM_ANDAMENTO';
                       setFormData({ ...formData, status: newStatus });
                     }}
-                    style={styles.segmentedControl} // Estilo adicionado abaixo
-                    backgroundColor={theme.muted} // Fundo cinza
-                    tintColor={theme.primary} // Cor do botão ativo (azul)
+                    style={styles.segmentedControl}
+                    backgroundColor={theme.muted}
+                    tintColor={theme.primary}
                     fontStyle={{ color: theme.foreground }}
                     activeFontStyle={{ color: theme.primaryForeground, fontWeight: 'bold' }}
                   />
-                  {/* ===== FIM DA ALTERAÇÃO 2 ===== */}
                   
                   <View style={styles.dialogActions}>
                     <Botao variant="destructive" onPress={() => setIsDialogOpen(false)}>
@@ -376,8 +360,6 @@ export default function TelaMetas() {
           </ScrollView>
         </Dialog>
         
-        {/* ... (Resto do arquivo: DatePicker, Lista de Metas, Botão Flutuante - sem alteração) ... */}
-        
         {showDatePickerFor && Platform.OS === 'android' && (
           <DateTimePicker
             value={getDateValue(formData[showDatePickerFor])}
@@ -390,7 +372,7 @@ export default function TelaMetas() {
 
         {isPageLoading && <ActivityIndicator size="large" color={theme.primary} />}
 
-        {/* ===== INÍCIO DO AJUSTE PARA O LAYOUT VAZIO (emptyState) ===== */}
+        {/* ===== INÍCIO DO ESTADO VAZIO (FAB já cuida da adição) ===== */}
         {!isPageLoading && goals.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Target color={theme.mutedForeground} size={48} style={styles.emptyIcon} />
@@ -398,13 +380,9 @@ export default function TelaMetas() {
               Nenhuma meta cadastrada
             </Text>
             <Text style={[styles.emptyText, { color: theme.mutedForeground }]}>
-              Comece criando sua primeira meta e alcançando seus objetivos!
+              Use o botão **+** para criar sua primeira meta e alcançar seus objetivos!
             </Text>
-            {/* Botão de criação (agora Botao) */}
-            <Botao onPress={openCreateDialog} style={styles.emptyButton}>
-              <Plus size={18} color={theme.primaryForeground} style={{ marginRight: 8 }} />
-              Criar Primeira Meta
-            </Botao>
+            {/* REMOVIDO: O botão de texto "Criar Primeira Meta" foi removido. */}
           </View>
         ) : (
           <View style={styles.grid}>
@@ -496,12 +474,13 @@ export default function TelaMetas() {
         )}
       </ScrollView>
 
-      {!isPageLoading && goals.length > 0 && (
+      {/* NOVO: Botão de Ação Flutuante (FAB) */}
+      {!isPageLoading && (
         <TouchableOpacity 
-          style={[styles.roundFloatingButtonBase, styles.floatingButton, { backgroundColor: theme.primary }]} 
+          style={[styles.fabButton, { backgroundColor: theme.primary }]} 
           onPress={openCreateDialog}
         >
-          <Plus size={28} color={theme.primaryForeground} />
+          <Plus size={30} color={theme.primaryForeground} />
         </TouchableOpacity>
       )}
 
@@ -519,8 +498,7 @@ const styles = StyleSheet.create({
   form: { gap: 12 },
   label: { fontSize: 14, fontWeight: '500', marginBottom: 4 },
   dialogActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 20 },
-  // Removido emptyState
-
+  
   grid: { gap: 24 },
   section: { gap: 16 },
   sectionTitle: { fontSize: 20, fontWeight: '600' },
@@ -538,32 +516,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
   },
 
-  // NOVO: Base para o botão flutuante redondo (antigo emptyAddButton)
-  roundFloatingButtonBase: {
+  // ===== ESTILO: Floating Action Button (FAB) =====
+  fabButton: {
+    position: 'absolute',
+    bottom: 30, // Distância da borda inferior
+    right: 20, // Distância da borda direita
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8, 
+    // Sombra para dar o efeito de flutuação
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8, // Sombra Android
+    zIndex: 10, // Garantir que flutue sobre o conteúdo
   },
-  floatingButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    elevation: 8, 
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  
-  // =======================================================
-  // ESTILOS DO ESTADO VAZIO (emptyState) - NOVO LAYOUT
-  // =======================================================
+  // ===============================================
+
+  // Estilos do Estado Vazio - Agora sem o botão de texto
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
@@ -576,7 +549,6 @@ const styles = StyleSheet.create({
     marginBottom: 16, 
     opacity: 0.8,
   },
-  // Ajustado para se parecer com a tela de matérias (maior/mais ousado)
   emptyTitle: { 
     fontSize: 22, 
     fontWeight: '700',
@@ -587,13 +559,8 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     marginBottom: 16, 
   },
-  emptyButton: {
-    paddingHorizontal: 24,
-    width: 'auto',
-    minWidth: 200,
-  },
-  // =======================================================
-
+  // O estilo emptyButton original foi removido/ignorad
+  
   segmentedControl: {
     height: 44, 
   },

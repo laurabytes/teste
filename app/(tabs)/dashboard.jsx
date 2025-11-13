@@ -159,7 +159,7 @@ export default function TelaDashboard() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {}
+        {/* Cabeçalho */}
         <View style={styles.header}>
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={[styles.title, { color: theme.foreground }]}>
@@ -171,19 +171,19 @@ export default function TelaDashboard() {
           </View>
 
           <TouchableOpacity
-            onPress={() => router.push('/(tabs)/perfil')}
+            onPress={() => router.push('/(tabs)/minha-conta')}
             style={styles.profileButton}
           >
             <UserCircle size={40} color={theme.primary} />
           </TouchableOpacity>
         </View>
-        {}
+        {/* Fim Cabeçalho */}
 
         {stats.performance.length > 0 && (
           <PerformanceChart performanceData={stats.performance} />
         )}
 
-        {}
+        {/* Estatísticas */}
         <View style={styles.grid}>
           <StatCard
             title="Matérias"
@@ -197,7 +197,6 @@ export default function TelaDashboard() {
             description="flashcards criados"
             icon={TrendingUp}
           />
-          {/* ALTERAÇÃO 2: Renomeado o card de estatística */}
           <StatCard
             title="Metas"
             value={stats.objetivos}
